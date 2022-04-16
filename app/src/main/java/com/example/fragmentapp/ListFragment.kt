@@ -56,17 +56,22 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         savedInstanceState: Bundle?
     ): View? {
         Log.d(LIST_FRAG_TAG, "onCreateView")
-        val v = inflater.inflate(R.layout.fragment_list, container, false)
-        return v
+        val view = inflater.inflate(R.layout.fragment_list, container, false)
+        initViews(view)
+        return view
     }
 
-    private fun initViews() {
-        textview1 = view?.findViewById(R.id.text_1)
-        textview2 = view?.findViewById(R.id.text_2)
-        textview3 = view?.findViewById(R.id.text_3)
-        textview4 = view?.findViewById(R.id.text_4)
-        textview5 = view?.findViewById(R.id.text_5)
-        textview6 = view?.findViewById(R.id.text_6)
+    private fun initViews(v: View) {
+        textview1 = v.findViewById(R.id.text_1)
+        textview2 = v.findViewById(R.id.text_2)
+        textview3 = v.findViewById(R.id.text_3)
+        textview4 = v.findViewById(R.id.text_4)
+        textview5 = v.findViewById(R.id.text_5)
+        textview6 = v.findViewById(R.id.text_6)
+
+        if (textViewsList.isNotEmpty()) {
+            textViewsList.clear()
+        }
 
         textview1?.let { textViewsList.add(it) }
         textview2?.let { textViewsList.add(it) }
@@ -78,19 +83,26 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        initViews()
         Log.d(LIST_FRAG_TAG, "onActivityCreated")
     }
 
     override fun onStart() {
         super.onStart()
         setTexts()
+        initListeners()
         Log.d(LIST_FRAG_TAG, "onStart")
     }
 
     private fun setTexts() {
+        Log.d(LIST_FRAG_TAG, "setTexts: = {${contactsList.size}}")
         for (textview in textViewsList) {
             textview.text = contactsList[textViewsList.indexOf(textview)].toString()
+        }
+    }
+
+    private fun initListeners() {
+        for (textview in textViewsList) {
+            textview.setOnClickListener(ContactListener(contactsList[textViewsList.indexOf(textview)]))
         }
     }
 
@@ -122,5 +134,16 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     override fun onDetach() {
         super.onDetach()
         Log.d(LIST_FRAG_TAG, "onDetach")
+    }
+
+    inner class ContactListener(private val contactData: ContactData) : View.OnClickListener {
+        override fun onClick(p0: View?) {
+            val fragment = DetailFragment.newDetailFragment(contactData)
+            requireActivity().supportFragmentManager.beginTransaction().run {
+                replace(R.id.fragment_container, fragment, "TAG")
+                addToBackStack("TAG1")
+                commit()
+            }
+        }
     }
 }
