@@ -1,7 +1,6 @@
 package com.example.fragmentapp
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,8 +47,19 @@ class ListFragment : Fragment(R.layout.fragment_list) {
             val contactData = DetailFragment.getContactDataFromBundle(bundle)
             val position = DetailFragment.getPosition(bundle)
             contactsList[position] = contactData
-            setTexts()
+            setText(position)
+            setListener(position)
         }
+    }
+
+    private fun setListener(position: Int) {
+        textViewsList[position].setOnClickListener(
+            ContactListener(contactsList[position], position)
+        )
+    }
+
+    private fun setText(position: Int) {
+        textViewsList[position].text = contactsList[position].toString()
     }
 
     private fun addContacts() {
@@ -115,7 +125,6 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         override fun onClick(p0: View?) {
             val fragment = DetailFragment.newDetailFragment(contactData, position)
             requireActivity().supportFragmentManager.beginTransaction().run {
-                Log.d("LLLL", "$haveSecondFragment")
                 if (haveSecondFragment) {
                     replace(R.id.fragment_detail_container, fragment, "TAG")
                 } else replace(R.id.fragment_container, fragment, "TAG")
