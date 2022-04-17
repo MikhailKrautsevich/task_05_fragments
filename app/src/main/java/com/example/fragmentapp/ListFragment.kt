@@ -108,15 +108,14 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     }
 
     private fun setTexts() {
-        for (textview in textViewsList) {
-            textview.text = contactsList[textViewsList.indexOf(textview)].toString()
+        for (i in 0 until textViewsList.size) {
+            setText(i)
         }
     }
 
     private fun initListeners() {
-        for (textview in textViewsList) {
-            val position = textViewsList.indexOf(textview)
-            textview.setOnClickListener(ContactListener(contactsList[position], position))
+        for (i in 0 until textViewsList.size) {
+            setListener(i)
         }
     }
 
