@@ -1,6 +1,7 @@
 package com.example.fragmentapp
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,8 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     private val contactsList: MutableList<ContactData> = ArrayList()
     private val textViewsList: MutableList<TextView> = ArrayList()
 
+    private var haveSecondFragment = false
+
     private var textview1: TextView? = null
     private var textview2: TextView? = null
     private var textview3: TextView? = null
@@ -21,16 +24,26 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     private var textview6: TextView? = null
 
     companion object {
+        private const val EXTRA_HAVE_SEC_FRAG = "EXHASEFR"
         const val REQUEST_KEY = "R_KEY"
 
-        fun newListFragment(): ListFragment {
-            return ListFragment()
+        fun newListFragment(have: Boolean): ListFragment {
+            val fragment = ListFragment()
+            Bundle().let {
+                it.putBoolean(EXTRA_HAVE_SEC_FRAG, have)
+                fragment.arguments = it
+            }
+            return fragment
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addContacts()
+        arguments?.getBoolean(EXTRA_HAVE_SEC_FRAG)?.let {
+            haveSecondFragment = it
+        }
+
         setFragmentResultListener(REQUEST_KEY) { _, bundle ->
             val contactData = DetailFragment.getContactDataFromBundle(bundle)
             val position = DetailFragment.getPosition(bundle)
@@ -102,7 +115,10 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         override fun onClick(p0: View?) {
             val fragment = DetailFragment.newDetailFragment(contactData, position)
             requireActivity().supportFragmentManager.beginTransaction().run {
-                replace(R.id.fragment_container, fragment, "TAG")
+                Log.d("LLLL", "$haveSecondFragment")
+                if (haveSecondFragment) {
+                    replace(R.id.fragment_detail_container, fragment, "TAG")
+                } else replace(R.id.fragment_container, fragment, "TAG")
                 addToBackStack("TAG1")
                 commit()
             }
