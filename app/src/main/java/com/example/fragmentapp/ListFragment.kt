@@ -1,13 +1,12 @@
 package com.example.fragmentapp
 
-import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 
 class ListFragment : Fragment(R.layout.fragment_list) {
 
@@ -22,23 +21,22 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     private var textview6: TextView? = null
 
     companion object {
-        const val LIST_FRAG_TAG = "com.example.1.List"
+        const val REQUEST_KEY = "R_KEY"
 
         fun newListFragment(): ListFragment {
-            Log.d(LIST_FRAG_TAG, "newList")
             return ListFragment()
         }
     }
 
-    override fun onAttach(activity: Activity) {
-        super.onAttach(activity)
-        Log.d(LIST_FRAG_TAG, "onAttach")
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(LIST_FRAG_TAG, "onCreate")
         addContacts()
+        setFragmentResultListener(REQUEST_KEY) { _, bundle ->
+            val contactData = DetailFragment.getContactDataFromBundle(bundle)
+            val position = DetailFragment.getPosition(bundle)
+            contactsList[position] = contactData
+            setTexts()
+        }
     }
 
     private fun addContacts() {
@@ -55,7 +53,6 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d(LIST_FRAG_TAG, "onCreateView")
         val view = inflater.inflate(R.layout.fragment_list, container, false)
         initViews(view)
         return view
@@ -81,20 +78,13 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         textview6?.let { textViewsList.add(it) }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        Log.d(LIST_FRAG_TAG, "onActivityCreated")
-    }
-
     override fun onStart() {
         super.onStart()
         setTexts()
         initListeners()
-        Log.d(LIST_FRAG_TAG, "onStart")
     }
 
     private fun setTexts() {
-        Log.d(LIST_FRAG_TAG, "setTexts: = {${contactsList.size}}")
         for (textview in textViewsList) {
             textview.text = contactsList[textViewsList.indexOf(textview)].toString()
         }
@@ -102,43 +92,15 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
     private fun initListeners() {
         for (textview in textViewsList) {
-            textview.setOnClickListener(ContactListener(contactsList[textViewsList.indexOf(textview)]))
+            val position = textViewsList.indexOf(textview)
+            textview.setOnClickListener(ContactListener(contactsList[position], position))
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(LIST_FRAG_TAG, "onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d(LIST_FRAG_TAG, "onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(LIST_FRAG_TAG, "onStop")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d(LIST_FRAG_TAG, "onDestroyView")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(LIST_FRAG_TAG, "onDestroy")
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d(LIST_FRAG_TAG, "onDetach")
-    }
-
-    inner class ContactListener(private val contactData: ContactData) : View.OnClickListener {
+    inner class ContactListener(private val contactData: ContactData, private val position: Int) :
+        View.OnClickListener {
         override fun onClick(p0: View?) {
-            val fragment = DetailFragment.newDetailFragment(contactData)
+            val fragment = DetailFragment.newDetailFragment(contactData, position)
             requireActivity().supportFragmentManager.beginTransaction().run {
                 replace(R.id.fragment_container, fragment, "TAG")
                 addToBackStack("TAG1")
